@@ -18,6 +18,9 @@ EthernetClient ethClient;
 PubSubClient client("m14.cloudmqtt.com", 14064, callback, ethClient);
 
 long lastReconnectAttempt = 0;
+int vagas[] = {0, 0};
+int contador = 0;
+
 
 boolean reconnect() {
   Serial.println("reconectando...");
@@ -25,12 +28,13 @@ boolean reconnect() {
     digitalWrite(ledVerde, HIGH);
     Serial.println("conectado");
     client.publish("teste", "hello world");
-    client.subscribe("teste#");
+    client.subscribe("teste/#");
   }
   Serial.println("Conectado MQTT");
   return client.connected();
 }
 void callback(char* topic, byte * payload, unsigned int length) {
+
   int msg = atoi(payload);
   digitalWrite(ledVerde, LOW);
   delay(100);
@@ -39,25 +43,37 @@ void callback(char* topic, byte * payload, unsigned int length) {
   digitalWrite(ledVerde, LOW);
   delay(100);
   digitalWrite(ledVerde, HIGH);
-  Serial.println(msg);
-  Serial.println(topic);
+  //  Serial.println(msg);
+  //  Serial.println(topic);
 
-  if (msg == 1) {
-    Serial.println("entrou if");
-    lcd.setCursor(0, 1);
-    lcd.print("                ");
-    lcd.setCursor(0, 1);
-    lcd.print(1);
-    delay(1000);
+  vagas[topic[6] - '0' - 1] = msg;
+  int livres = 0;
+  int ocupadas = 0;
+  
+  for (contador = 0 ; contador < 3; contador++) {
+    Serial.println("Numero vaga");
+    Serial.println(topic[6]);
+    Serial.println("Mensagem:");
+    Serial.println(vagas[topic[6] - '0' - 1]);
+    if (vagas[contador] == 1) {
+      livres = livres + 1;
+      Serial.println("livres:");
+      Serial.println(livres);
+    }
+    else if (vagas[contador] == 0) {
+      ocupadas = ocupadas + 1;
+      Serial.println("ocupadas:");
+      Serial.println(ocupadas);
+    }
   }
-  else {
-    Serial.println("else");
-    lcd.setCursor(0, 1);
-    lcd.print("                ");
-    lcd.setCursor(0, 1);
-    lcd.print(0);
-    delay(1000);
-  }
+  Serial.println("Numero vaga");
+
+  lcd.setCursor(0, 1);
+  lcd.print("                ");
+  lcd.setCursor(0, 1);
+  lcd.print(livres);
+  delay(1000);
+
 }
 
 void setup() {
@@ -71,7 +87,7 @@ void setup() {
   if (client.connect("arduino", "arduino", "arduino"))
   {
     // Conecta no topic para receber mensagens
-    client.subscribe("teste#");
+    client.subscribe("teste/#");
     digitalWrite(ledVerde, HIGH);
     Serial.println("Conectado MQTT");
     delay(50);
