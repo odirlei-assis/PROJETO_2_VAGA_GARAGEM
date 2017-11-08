@@ -16,9 +16,9 @@ void callback(char *topic, byte * payload, unsigned int length);
 
 EthernetClient ethClient;
 PubSubClient client("m14.cloudmqtt.com", 14064, callback, ethClient);
-
+int const qtdVagas= 2;
 long lastReconnectAttempt = 0;
-int vagas[] = {0, 0};
+int vagas[qtdVagas];
 int contador = 0;
 
 
@@ -50,7 +50,7 @@ void callback(char* topic, byte * payload, unsigned int length) {
   int livres = 0;
   int ocupadas = 0;
   
-  for (contador = 0 ; contador < 3; contador++) {
+  for (contador = 0 ; contador <= qtdVagas ; contador++) {
     Serial.println("Numero vaga");
     Serial.println(topic[6]);
     Serial.println("Mensagem:");
